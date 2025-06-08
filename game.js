@@ -14,6 +14,7 @@ let squares = [];
 let score = 0;
 let selected = null;
 let lastMove = null;
+let audioUnlocked = false; // Ses izni kontrolü için değişken
 
 // Artık sabit levels dizisi yok, görevler dinamik olacak
 function getLevelConfig(level) {
@@ -89,7 +90,7 @@ function dragDrop(e) {
     const fromId = parseInt(selected.getAttribute('data-id'));
     const toId = parseInt(this.getAttribute('data-id'));
     const validMoves = [fromId - 1, fromId + 1, fromId - width, fromId + width];
-    if (validMoves.includes(toId)) {
+    if (validMoves.includes(toId) && movesLeft > 0) {
         lastMove = { fromId, toId };
         movesLeft--;
         updateUI();
@@ -102,7 +103,7 @@ function dragDrop(e) {
     selected = null;
 }
 
-let audioUnlocked = false;
+// Kullanıcı ilk etkileşimde ses izni açılır
 function unlockAudio() {
     if (audioUnlocked) return;
     audioUnlocked = true;
@@ -317,7 +318,7 @@ function handleTouchEnd(e) {
         if (direction === 'right' && fromId % width < width - 1) toId = fromId + 1;
         if (direction === 'up' && fromId - width >= 0) toId = fromId - width;
         if (direction === 'down' && fromId + width < width * width) toId = fromId + width;
-        if (toId !== null) {
+        if (toId !== null && movesLeft > 0) {
             lastMove = { fromId, toId };
             movesLeft--;
             updateUI();
@@ -370,6 +371,10 @@ function updateUI() {
     }
     mission += arr.join(', ');
     missionInfo.innerHTML = mission;
+    // Hamle bittiğinde kaybetme kontrolü
+    if (movesLeft === 0 && !checkGoals() && modal.style.display !== 'flex') {
+        showModal(false);
+    }
 }
 
 function checkGoals() {
@@ -508,7 +513,8 @@ window.addEventListener('DOMContentLoaded', function() {
     if (audioModal && audioAllow) {
         audioAllow.onclick = function() {
             unlockAudio();
-            audioModal.style.display = 'none';
+            // Modalı DOM'dan tamamen kaldır
+            audioModal.parentNode.removeChild(audioModal);
         };
     }
 });
@@ -577,7 +583,7 @@ function dragDrop(e) {
     const fromId = parseInt(selected.getAttribute('data-id'));
     const toId = parseInt(this.getAttribute('data-id'));
     const validMoves = [fromId - 1, fromId + 1, fromId - width, fromId + width];
-    if (validMoves.includes(toId)) {
+    if (validMoves.includes(toId) && movesLeft > 0) {
         lastMove = { fromId, toId };
         movesLeft--;
         updateUI();
@@ -609,7 +615,7 @@ function handleTouchEnd(e) {
         if (direction === 'right' && fromId % width < width - 1) toId = fromId + 1;
         if (direction === 'up' && fromId - width >= 0) toId = fromId - width;
         if (direction === 'down' && fromId + width < width * width) toId = fromId + width;
-        if (toId !== null) {
+        if (toId !== null && movesLeft > 0) {
             lastMove = { fromId, toId };
             movesLeft--;
             updateUI();
