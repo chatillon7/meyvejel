@@ -6,31 +6,29 @@
     <title>Mey ve Jel</title>
     <!-- Bootstrap CDN (güncel ve doğru adres) -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons CDN -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/png" href="pink.png">
 </head>
 <body>
     <div class="container py-4">
-        <div class="game-container shadow-lg bg-white rounded-4 p-4 mx-auto">
-            <h1 class="mb-3 display-5 fw-bold text-dark">Mey ve Jel</h1>
-            <div id="level-info" class="mb-2 h5"></div>
-            <div id="game-board" class="mb-3"></div>
-            <div class="score mb-2">Skor: <span id="score">0</span></div>
-            <div class="mb-2">Kullanılan Patlayıcı: <span id="special-counter">0</span></div>
-            <div id="moves-info" class="mb-2"></div>
-            <div id="mission-info" class="mb-2"></div>
+        <div class="game-container shadow-lg bg-transparent rounded-4 p-4 mx-auto">
+            <div id="level-info" class="mb-0 text-center"></div>
+            <div id="game-board" class="mb-3 mt-0"></div>
+            <div id="game-info-panel" class="mb-2"></div>
         </div>
     </div>
     <div id="modal" class="modal" style="display:none;">
         <div class="modal-content">
             <h2 id="modal-title" class="mb-2"></h2>
             <p id="modal-message" class="mb-3"></p>
-            <button id="modal-next" class="btn btn-success me-2" style="display:none;">Sonraki Bölüm</button>
+            <button id="modal-next" class="btn btn-success" style="display:none;">Sonraki Bölüm</button>
             <button id="modal-retry" class="btn btn-warning" style="display:none;">Tekrar Oyna</button>
         </div>
     </div>
     <div id="audio-modal" class="modal" style="display:flex;">
         <div class="modal-content">
-            <p>Oyun ses efektleri için lütfen "Sesi Aç" butonuna tıklayın.</p>
             <button id="audio-allow" class="btn btn-dark">Sesi Aç</button>
             <div id="audio-test-result" style="color:red;"></div>
         </div>

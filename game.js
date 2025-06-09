@@ -327,7 +327,8 @@ function checkMatches(isPlayerMove = false) {
         }
     }
     if (popped) playSound('pop-sound');
-    scoreDisplay.textContent = score;
+    // Skor ve özel sayaç panelde, DOM'dan güncellenmemeli
+    // if (scoreDisplay) scoreDisplay.textContent = score;
     updateUI();
     // --- GÖREV TAMAMLANDI MI KONTROLÜ ---
     if (checkGoals() && modal.style.display !== 'flex') {
@@ -360,6 +361,11 @@ function checkMatches(isPlayerMove = false) {
         }
         updateUI();
         lastMove = null;
+    } 
+    // --- HAMLE BİTTİĞİNDE MODAL AÇILSIN ---
+    if (movesLeft <= 0 && !checkGoals() && modal.style.display !== 'flex') {
+        showModal(false);
+        return;
     } else if (isPlayerMove) {
         if (checkGoals()) {
             showModal(true);
@@ -415,10 +421,10 @@ function triggerBomb(index) {
     if (popped) {
         playSound('bomb-sound');
         specialCounter++;
-        updateSpecialCounterUI();
+        // updateSpecialCounterUI(); // panelde güncelleniyor
         if (specialCounter % 5 === 0) createPaletteCandy();
     }
-    scoreDisplay.textContent = score;
+    // if (scoreDisplay) scoreDisplay.textContent = score;
     updateUI();
     setTimeout(dropCandies, 200);
 }
@@ -485,10 +491,10 @@ function triggerFirework(index) {
     if (popped) {
         playSound('firework-sound');
         specialCounter++;
-        updateSpecialCounterUI();
+        // updateSpecialCounterUI(); // panelde güncelleniyor
         if (specialCounter % 5 === 0) createPaletteCandy();
     }
-    scoreDisplay.textContent = score;
+    // if (scoreDisplay) scoreDisplay.textContent = score;
     updateUI();
     setTimeout(dropCandies, 200);
 }
@@ -534,7 +540,7 @@ function triggerBombFireworkCombo(index) {
         }
     }
     if (popped) playSound('pop-sound');
-    scoreDisplay.textContent = score;
+    // if (scoreDisplay) scoreDisplay.textContent = score;
     updateUI();
     setTimeout(dropCandies, 200);
 }
@@ -807,7 +813,7 @@ function startGame() {
     colorProgress = {};
     chainPopped = null;
     specialCounter = 0;
-    updateSpecialCounterUI();
+    // updateSpecialCounterUI(); // Artık gerek yok, panel updateUI ile güncelleniyor
     createBoard();
     // Level ve görevleri ayarla
     let config = getLevelConfig(currentLevel);
@@ -822,15 +828,38 @@ function startGame() {
 
 // Basit UI güncellemesi (geliştirilebilir)
 function updateUI() {
-    if (typeof levelInfo !== 'undefined') levelInfo.textContent = 'Bölüm: ' + currentLevel;
-    if (typeof movesInfo !== 'undefined') movesInfo.textContent = 'Kalan Hamle: ' + movesLeft;
-    if (typeof missionInfo !== 'undefined') {
-        let html = '';
-        for (let key in colorGoals) {
-            html += `<img src="${key}" class="mission-img"> ${colorProgress[key]||0}/${colorGoals[key]}  `;
-        }
-        missionInfo.innerHTML = html;
+    // Üstte: Bölüm ve test.png ortalanmış şekilde
+    if (typeof levelInfo !== 'undefined') levelInfo.innerHTML = `
+        <span style="position: relative; display: inline-block; width: 300px; height: 180px;">
+            <img src="test.png" alt="bölüm arka plan" style="width: 100%; height: 100%; display: block;">
+            <span style="position: absolute; top: 55%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-weight: bold; text-shadow: 0 1px 4px #000, 0 0 2px #000; font-size: 1.1em; white-space: nowrap;">Bölüm: ${currentLevel}<br/>Skor: <span class="me-3" id="score">${score}</span> <span id="moves-info-inner">${movesLeft} <i class="bi bi-repeat"></i></span></span>
+        </span>`;
+    // game-board altındaki panelde: skor, kalan hamle, kullanılan patlayıcı, görevler alt alta
+    const panel = document.createElement('div');
+    panel.id = 'game-info-panel';
+    panel.style = 'padding-top: 40px; padding-right: 32px; padding-left: 32px; height: 180px; width: 320px; margin: 0 auto 0 auto; background: url("test2.png") center/cover; text-align: center; color: #fff; font-weight: bold;';
+    panel.innerHTML = `
+        <div style='margin-bottom: 47px;'>Kullanılan Patlayıcı: <span id="special-counter">${specialCounter}</span></div>
+        <div id="mission-info-inner"></div>
+    `;
+    // Paneli eklemeden önce eski paneli kaldır
+    const oldPanel = document.getElementById('game-info-panel');
+    if (oldPanel && oldPanel.parentNode) oldPanel.parentNode.removeChild(oldPanel);
+    // game-board'ın hemen altına ekle
+    if (board && board.parentNode) {
+        if (board.nextSibling) board.parentNode.insertBefore(panel, board.nextSibling);
+        else board.parentNode.appendChild(panel);
     }
+    // Görevleri de mission-info-inner'a ekle
+    let html = '';
+    for (let key in colorGoals) {
+        const current = colorProgress[key] || 0;
+        const total = colorGoals[key];
+        const kalan = Math.max(0, total - current);
+        html += `<img src="${key}" class="mission-img"> ${kalan}  `;
+    }
+    const missionInner = document.getElementById('mission-info-inner');
+    if (missionInner) missionInner.innerHTML = html;
 }
 
 function swapCandiesWithAnimation(fromId, toId, callback) {
@@ -921,7 +950,7 @@ function showModal(isWin) {
     if (isWin) {
         playSound('win-sound');
         modalTitle.textContent = 'Tebrikler!';
-        modalMessage.textContent = 'Bölümü başarıyla tamamladınız!';
+        modalMessage.textContent = '';
         modalNext.style.display = '';
         modalRetry.style.display = 'none';
         modalNext.onclick = function() {
@@ -932,8 +961,8 @@ function showModal(isWin) {
         };
     } else {
         playSound('lose-sound');
-        modalTitle.textContent = 'Oyun Bitti!';
-        modalMessage.textContent = 'Hamleleriniz bitti veya görev tamamlanamadı.';
+        modalTitle.textContent = 'Kaybettiniz!';
+        modalMessage.textContent = '';
         modalNext.style.display = 'none';
         modalRetry.style.display = '';
         modalRetry.onclick = function() {
@@ -941,11 +970,6 @@ function showModal(isWin) {
             startGame();
         };
     }
-}
-
-function updateSpecialCounterUI() {
-    const span = document.getElementById('special-counter');
-    if (span) span.textContent = specialCounter;
 }
 
 // Palette bir bomb ile swipelanırsa: rastgele 3 kareye bomb yerleştir ve hepsini patlat.
@@ -964,7 +988,7 @@ function triggerPaletteBombCombo() {
         }
     }
     if (popped) playSound('palette-sound');
-    scoreDisplay.textContent = score;
+    // if (scoreDisplay) scoreDisplay.textContent = score;
     updateUI();
     setTimeout(dropCandies, 200);
 }
@@ -984,7 +1008,7 @@ function triggerPaletteColorCombo(colorImgSrc) {
         }
     }
     if (popped) playSound('palette-sound');
-    scoreDisplay.textContent = score;
+    // if (scoreDisplay) scoreDisplay.textContent = score;
     updateUI();
     setTimeout(dropCandies, 200);
 }
